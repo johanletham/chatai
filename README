@@ -1,0 +1,55 @@
+# Asistente de IA para WhatsApp
+
+Bot mínimo en Node.js para WhatsApp Cloud API. Recibe un mensaje, conserva una memoria corta de la conversación y responde en español preguntando qué necesita o desea la persona.
+
+## 1. Ejecutar localmente
+
+Requisitos: Node.js 20 o superior.
+
+```powershell
+npm install
+Copy-Item .env.example .env
+npm run check
+npm start
+```
+
+Prueba de estado:
+
+```text
+http://localhost:3000/health
+```
+
+No pongas tu número telefónico ni tokens dentro del código. El número que se usa para responder se identifica en Meta mediante `META_PHONE_NUMBER_ID`; el teléfono del cliente llega automáticamente en el webhook.
+
+## 2. Variables necesarias
+
+Edita `.env`:
+
+- `OPENAI_API_KEY`: clave de la API de OpenAI.
+- `OPENAI_MODEL`: modelo a utilizar; el valor inicial es `gpt-5.4-mini`.
+- `META_ACCESS_TOKEN`: token permanente o de larga duración de tu aplicación de Meta.
+- `META_PHONE_NUMBER_ID`: identificador del número de WhatsApp Business, no necesariamente el número visible.
+- `META_VERIFY_TOKEN`: texto secreto que también registrarás al configurar el webhook.
+- `BUSINESS_NAME`: nombre que debe usar el asistente.
+- `ASSISTANT_INSTRUCTIONS`: opcional; sirve para agregar información real de tu negocio, como horario, ubicación o servicios.
+
+## 3. Conectar tu número de WhatsApp
+
+1. En Meta for Developers crea o abre una aplicación y agrega WhatsApp Business.
+2. En la configuración de WhatsApp copia el `Phone Number ID` y genera un token con permisos para enviar y recibir mensajes.
+3. Publica este servidor en una URL HTTPS. Para desarrollo puedes usar un túnel como ngrok o Cloudflare Tunnel.
+4. En la configuración de Webhooks registra:
+   - URL de devolución de llamada: `https://TU-DOMINIO.com/webhook/whatsapp`
+   - Token de verificación: el mismo valor de `META_VERIFY_TOKEN`
+   - Suscripción: `messages`
+5. Usa el número de prueba de Meta o agrega tu número de negocio aprobado. Meta puede requerir verificación del negocio y plantillas para mensajes iniciados por la empresa.
+
+## Personalizarlo
+
+Ejemplo de `ASSISTANT_INSTRUCTIONS`:
+
+```env
+ASSISTANT_INSTRUCTIONS=Eres el asistente de Café Luna. Saluda y pregunta qué desea la persona. Atendemos de lunes a sábado de 8:00 a 20:00. Si preguntan algo fuera de esos datos, pide que dejen su nombre y teléfono para que una persona les contacte. Responde breve y en español.
+```
+
+La memoria actual vive en RAM y se pierde al reiniciar el proceso. Para una operación real con varios servidores conviene guardar las conversaciones en Redis o una base de datos.
